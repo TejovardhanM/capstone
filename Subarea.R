@@ -1,0 +1,31 @@
+
+Zelenograd<-c("Krjukovo","Matushkino","Savelki","Silino","Staroe Krjukovo")
+Novomoskovsky<-c("Poselenie Desjonovskoe","Poselenie Filimonkovskoe","Poselenie Kokoshkino","Poselenie Marushkinskoe","Poselenie Moskovskij","Poselenie Mosrentgen","Poselenie Rjazanovskoe","Poselenie Shherbinka","Poselenie Sosenskoe","Poselenie Vnukovskoe","Poselenie Voskresenskoe")
+Troitsky<-c("Poselenie Kievskij","Poselenie Klenovskoe","Poselenie Krasnopahorskoe","Poselenie Mihajlovo-Jarcevskoe","Poselenie Novofedorovskoe","Poselenie Pervomajskoe","Poselenie Rogovskoe","Poselenie Shhapovskoe","Poselenie Voronovskoe","Troickij okrug")
+Northern<-c("Ajeroport","Begovoe","Beskudnikovskoe","Dmitrovskoe","Golovinskoe","Horoshevskoe","Hovrino","Koptevo","Levoberezhnoe","Molzhaninovskoe","Savelovskoe","Sokol","Timirjazevskoe","Vojkovskoe","Vostochnoe Degunino","Zapadnoe Degunino")
+Southwest<-c("Akademicheskoe","Cheremushki","Gagarinskoe","Jasenevo","Juzhnoe Butovo","Kon'kovo","Kotlovka","Lomonosovskoe","Obruchevskoe","Severnoe Butovo","Teplyj Stan","Zjuzino")
+Northeast<-c("Alekseevskoe","Altuf'evskoe","Babushkinskoe","Bibirevo","Butyrskoe","Jaroslavskoe","Juzhnoe Medvedkovo","Lianozovo","Losinoostrovskoe","Mar'ina Roshha","Marfino","Ostankinskoe","Otradnoe","Rostokino","Severnoe","Severnoe Medvedkovo","Sviblovo")
+Central<-c("Arbat","Basmannoe","Hamovniki","Jakimanka","Krasnosel'skoe","Meshhanskoe","Presnenskoe","Taganskoe","Tverskoe","Zamoskvorech'e")
+Southern<-c("Birjulevo Vostochnoe","Birjulevo Zapadnoe","Brateevo","Caricyno","Chertanovo Central'noe","Chertanovo Juzhnoe","Chertanovo Severnoe","Danilovskoe","Donskoe","Moskvorech'e-Saburovo","Nagatino-Sadovniki","Nagatinskij Zaton","Nagornoe","Orehovo-Borisovo Juzhnoe","Orehovo-Borisovo Severnoe","Zjablikovo")
+Eastern<-c("Bogorodskoe","Gol'janovo","Ivanovskoe","Izmajlovo","Kosino-Uhtomskoe","Metrogorodok","Novogireevo","Novokosino","Perovo","Preobrazhenskoe","Severnoe Izmajlovo","Sokol'niki","Sokolinaja Gora","Veshnjaki","Vostochnoe","Vostochnoe Izmajlovo")
+Western<-c("Dorogomilovo","Filevskij Park","Fili Davydkovo","Krylatskoe","Kuncevo","Mozhajskoe","Novo-Peredelkino","Ochakovo-Matveevskoe","Prospekt Vernadskogo","Ramenki","Solncevo","Troparevo-Nikulino","Vnukovo")
+Northwest<-c("Horoshevo-Mnevniki","Juzhnoe Tushino","Kurkino","Mitino","Pokrovskoe Streshnevo","Severnoe Tushino","Shhukino","Strogino")
+Southeast<-c("Juzhnoportovoe","Kapotnja","Kuz'minki","Lefortovo","Ljublino","Mar'ino","Nekrasovka","Nizhegorodskoe","Pechatniki","Rjazanskij","Tekstil'shhiki","Vyhino-Zhulebino")
+
+
+sub.districts <- cbind(district = rep("Zelenograd",length(Zelenograd)), sub_area = Zelenograd)
+
+sub.districts <- rbind(sub.districts, cbind(district = rep("Novomoskovsky",length(Novomoskovsky)), sub_area = Novomoskovsky))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Troitsky",length(Troitsky)), sub_area = Troitsky))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Northern",length(Northern)), sub_area = Northern))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Southwest",length(Southwest)), sub_area = Southwest))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Northeast",length(Northeast)), sub_area = Northeast))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Central",length(Central)), sub_area = Central))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Southern",length(Southern)), sub_area = Southern))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Eastern",length(Eastern)), sub_area = Eastern))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Western",length(Western)), sub_area = Western))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Northwest",length(Northwest)), sub_area = Northwest))
+sub.districts <- rbind(sub.districts, cbind(district = rep("Southeast",length(Southeast)), sub_area = Southeast))
+
+rm(list=setdiff(ls(), "sub.districts"))
+
