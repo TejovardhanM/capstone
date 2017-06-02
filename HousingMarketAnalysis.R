@@ -26,6 +26,18 @@ for ( i in 1: length(unique.districts))
 
 
 
+scale_this <- function(x){
+  if (is.numeric(x) || is.integer(x))
+  {
+    (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE) 
+  }
+  else {x}
+}
+
+df.housing <-data.frame(lapply(df.housing, scale_this))
+
+
+###inprogress
 df.housing =df.housing%>% select(-grep("raion", names(df.housing)))
 
 getfactorcolumns <-map_dbl(df.housing, function(x){is.factor(x)})
@@ -52,29 +64,53 @@ ggplot(data = df.housing, mapping = aes(district, price_doc))+geom_violin(scale 
 ggplot(data = df.housing, mapping = aes(district, price_doc))+geom_boxplot()+
   theme(axis.text.x=element_text(angle=90, hjust=1))
 
+df.housing$timestamp = as.POSIXlt(df.housing$timestamp, "GMT")
+df.housing$year = as.integer(df.housing$timestamp$year) +1900
 
-district.count = df.housing %>% group_by(district) %>% summarise(count = n()) %>%
+district.count = df.housing %>% select(district,year) %>%group_by(district, year) %>% summarise(count = n()) %>%
   mutate( percentage = round(count/ sum(count)*100))
+
 district.count = as.data.frame(district.count)
+
 
 ggplot(data= district.count , mapping = aes(reorder(district, -percentage), count))+
   geom_bar(stat="identity", fill ="orangered")+
+  coord_polar(theta = "x", direction=1 )+
+
 theme(axis.text.x=element_text(angle=90, hjust=1))+
   ggtitle("sales transactions by district")
 
-df.housing$timestamp = as.POSIXlt(df.housing$timestamp,  "GMT")
-g = ggplot(data = df.housing)
-
-df.housing %>% group_by(district)
-
-g+(mapping = aes(x= df.housing$timestamp$year + 1900, group_by = district)+geom_point()+geom_line()+geom_smooth()
-   
+ggplot(district.count, mapping = aes(year, count, group = district, color = district))+geom_point()+geom_line()
 
 
-### median price by district
+### median price by district by year
+dist.median = df.housing %>% select(district, price_doc, year)%>% group_by(district, year) %>% summarise(Median = median(price_doc))
+dist.median = as.data.frame(dist.median)
 
+ggplot(dist.median, mapping = aes(year, Median, group = district, color = district))+
+  geom_point()+geom_line()+
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+  
+
+#########population by district
 
 names(df.housing)
+df.housing$raion_popul
+df.popcount = df.housing %>% select(price_doc,raion_popul, district, year) %>%group_by(district, year)%>% summarize(pop.count = n())
+df.popcount = as.data.frame(df.popcount)
+
+df.merged = merge(df.popcount, dist.median)
+names(df.merged)
+
+b = ggplot(df.merged, mapping = aes(year, pop.count, group = district, color = district))+
+  geom_jitter()+
+  theme(axis.text.x=element_text(angle=90, hjust=1))
+
+
+ggplot(df.merged, mapping = aes(year, Median, group = district, color = district))+
+  geom_point()+geom_line()+
+ geom_jitter(aes(size = pop.count, alpha = 0.3))+
+    theme(axis.text.x=element_text(angle=90, hjust=1))
 
 
 ########################
@@ -117,16 +153,6 @@ ggplot(b, aes(timestamp,price_doc ))+
 
 ggplot(b, aes(full_sq,price_doc))+geom_point(aes(color = factor(build_year)))+
 facet_grid(material~max_floor)
-
-scale_this <- function(x){
-  if (is.numeric(x) || is.integer(x))
-  {
-    (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE) 
-  }
-  else {x}
-}
-
-df.housing <-data.frame(lapply(df.housing, scale_this))
 
 ## We need to select features to assign the assumpted mean value 
 for ( col in names(df.housing)){
