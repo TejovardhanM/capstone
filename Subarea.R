@@ -26,6 +26,6 @@ sub.districts <- rbind(sub.districts, cbind(district = rep("Eastern",length(East
 sub.districts <- rbind(sub.districts, cbind(district = rep("Western",length(Western)), sub_area = Western))
 sub.districts <- rbind(sub.districts, cbind(district = rep("Northwest",length(Northwest)), sub_area = Northwest))
 sub.districts <- rbind(sub.districts, cbind(district = rep("Southeast",length(Southeast)), sub_area = Southeast))
-
+sub.districts <- data.frame(sub.districts)
 rm(list=setdiff(ls(), "sub.districts"))
 
