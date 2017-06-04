@@ -7,7 +7,111 @@ df.housing <-df.housing %>% select(-id)
 df.housing$state[df.housing$state == 33] <- which.max(table(df.housing$state))
 df.housing$build_year[df.housing$build_year == 20052009] <- 2007
 df.housing[which(df.housing$build_year == 4965), "build_year"] = 1961
+names(df.housing)
 
+#df.housing[is.na(df.housing[,154:292]),154:292]
+df.missingvalues<- map_dbl(df.housing[,154:291], function(x){sum(is.na(x))})
+df.missingvalues<- df.missingvalues[df.missingvalues>0]
+as.data.frame(df.missingvalues)
+
+#names(df.missingvalues[grep("_500",names(df.housing),)])
+
+colnames.500<-colnames(df.housing[,grep("_500$", names(df.housing))])
+
+colnames.500 <- colnames.500[-grep("price_500",colnames.500)]
+colnames.500 <- colnames.500[-grep("sqm_500",colnames.500)]
+
+df.housing.500 <- df.housing[,c(colnames.500,"sub_area")]
+
+#df.housing.500$quint <- bin(df.housing.500$green_part_500, method = "content")
+#library(OneR)
+
+df.housing.500<-df.housing.500 %>%
+  #select(sub_area,office_count_500) %>%
+  group_by(sub_area) %>%
+  mutate(quantile = bin(green_part_500,nbins=10, method = "content"),mean= median(green_part_500)) %>%
+  mutate(splitQuantile = as.numeric(sub(".*,(.*?)].*","\\1",quantile)))%>%
+  #mutate(green_part_500_new=ifelse(splitQuantile== max(splitQuantile),mean,green_part_500))
+  mutate(facLevel=as.numeric(factor(splitQuantile)),green_part_500=ifelse(is.na(splitQuantile),mean,green_part_500))
+
+
+#library(dplyr)
+df.housing.500<-df.housing.500 %>%
+  group_by(sub_area) %>% 
+  mutate_each(funs(replace(., which(is.na(.)),
+                           median(., na.rm=TRUE))),which(is.numeric(.)))
+
+#Need to convert to function the above dplyr 
+assignFac<- function(column)
+{
+  #tx<-column
+  y<- df.housing.500 %>% select_(column,"sub_area") 
+  
+  names(y)<-gsub(column,"tx",names(y))
+  
+  y$sub_area=as.character(y$sub_area)
+  temp.df<- y %>%
+    group_by(sub_area) %>%
+    mutate(quantile = bin(tx,nbins=10, method = "content")) %>%
+    mutate(splitQuantile = as.numeric(sub(".*,(.*?)].*","\\1",quantile)))%>%
+    mutate(facLevel=as.numeric(factor(splitQuantile)))
+  return(temp.df$facLevel)
+}
+
+colnames<-names(df.housing.500)
+
+for (i in 1:(length(colnames)-1)) {
+  
+  df.housing.500[,colnames[i]]<- assignFac(colnames[i])
+}
+
+cols.Distance <- c("water_km","mkad_km","fitness_km","swim_pool_km",
+                   "ice_rink_km","stadium_km","basketball_km",
+                   "hospice_morgue_km","detention_facility_km","public_healthcare_km",
+                   "big_church_km","church_synagogue_km","mosque_km",
+                   "theater_km","museum_km","exhibition_km","catering_km","price_doc")
+cor.df<- df.housing[,cols.Distance]
+library(corrplot)
+corrplot(cor(cor.df, use="complete.obs"))
+library("caret")
+df2<-cor(cor.df)
+hc = findCorrelation(df2, cutoff=0.7) # putt any value as a "cutoff" 
+hc = sort(hc)
+reduced_Data = cor.df[,-c(hc)]
+print (reduced_Data)
+library(mlbench)
+?train
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(price_doc~., data=cor.df, method="rpart", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+
+#df.housing.500$office_count_500<- assignFac("office_count_500")
+
+-------------
+  
+  #assignFac("prom_part_500")
+  
+  b<- df.housing.500[df.housing.500$sub_area=="Ajeroport",]
+
+df.housing.500<- df.housing.500 %>% 
+  group_by(sub_area) %>%
+  mutate(green_part_500_new=ifelse(splitQuantile== max(splitQuantile),mean,green_part_500))
+
+
+
+boxplot(df.housing.500$green_part_500_new)
+boxplot(df.housing.500$green_part_500)
+
+
+#cut(my.df$x, breaks = quantile(my.df$x, probs = seq(0, 1, 0.25)), 
+#    include.lowest = TRUE, labels = 1:4)
+?rank
 
 df.housing=merge(df.housing, sub.districts, by.x = "sub_area", by.y = "sub_area")
 df.missingpct = data.frame();
@@ -76,8 +180,8 @@ district.count = as.data.frame(district.count)
 ggplot(data= district.count , mapping = aes(reorder(district, -percentage), count))+
   geom_bar(stat="identity", fill ="orangered")+
   coord_polar(theta = "x", direction=1 )+
-
-theme(axis.text.x=element_text(angle=90, hjust=1))+
+  
+  theme(axis.text.x=element_text(angle=90, hjust=1))+
   ggtitle("sales transactions by district")
 
 ggplot(district.count, mapping = aes(year, count, group = district, color = district))+geom_point()+geom_line()
@@ -90,7 +194,7 @@ dist.median = as.data.frame(dist.median)
 ggplot(dist.median, mapping = aes(year, Median, group = district, color = district))+
   geom_point()+geom_line()+
   theme(axis.text.x=element_text(angle=90, hjust=1))
-  
+
 
 #########population by district
 
@@ -109,8 +213,8 @@ b = ggplot(df.merged, mapping = aes(year, pop.count, group = district, color = d
 
 ggplot(df.merged, mapping = aes(year, Median, group = district, color = district))+
   geom_point()+geom_line()+
- geom_jitter(aes(size = pop.count, alpha = 0.3))+
-    theme(axis.text.x=element_text(angle=90, hjust=1))
+  geom_jitter(aes(size = pop.count, alpha = 0.3))+
+  theme(axis.text.x=element_text(angle=90, hjust=1))
 
 
 ########################
@@ -118,13 +222,13 @@ ggplot(df.merged, mapping = aes(year, Median, group = district, color = district
 ggplot(df.missingpct, aes(x=reorder(var, -miss), y=miss))+
   geom_bar(stat= "identity", fill  = "orangered")+
   facet_grid(district~.)+
-theme(axis.text.x=element_text(angle=90, hjust=1))
+  theme(axis.text.x=element_text(angle=90, hjust=1))
 
 
 ggplot(df.missingpct, aes(x=reorder(var, -miss), y=miss))+
   geom_boxplot()+
   facet_grid(district~.)+
-    theme(axis.text.x=element_text(angle=90, hjust=1))
+  theme(axis.text.x=element_text(angle=90, hjust=1))
 
 
 #df.housing[df.housing$district == unique.districts[1], 50:100] %>% correlate() %>% network_plot(min_cor=0.9)
@@ -152,7 +256,7 @@ ggplot(b, aes(timestamp,price_doc ))+
 
 
 ggplot(b, aes(full_sq,price_doc))+geom_point(aes(color = factor(build_year)))+
-facet_grid(material~max_floor)
+  facet_grid(material~max_floor)
 
 ## We need to select features to assign the assumpted mean value 
 for ( col in names(df.housing)){
@@ -162,8 +266,8 @@ for ( col in names(df.housing)){
 
 
 housing.Matrix <- as.data.frame(model.matrix(~. + 0 ,data=df.housing[, -c(1,2)],
-                                  contrasts.arg = lapply(df.housing[,c(12,13)], 
-                                  contrasts, contrasts=FALSE)))
+                                             contrasts.arg = lapply(df.housing[,c(12,13)], 
+                                                                    contrasts, contrasts=FALSE)))
 b<-cor(housing.Matrix)
 if(!require(caret))install.packages("caret")
 
