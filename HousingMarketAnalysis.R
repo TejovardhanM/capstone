@@ -2,6 +2,7 @@ source("config.R")
 source("subarea.R")
 df.housing<-read.csv("train.csv")
 #9572/20899 = 45%
+#test add Suman Nooney
 
 df.housing <-df.housing %>% select(-id)
 df.housing$state[df.housing$state == 33] <- which.max(table(df.housing$state))
