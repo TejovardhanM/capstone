@@ -15,3 +15,4 @@ if(!require("tidyverse")){install.packages("tidyverse");require("tidyverse")}
 #if(!require("corrr")){install.packages("corrr");require("corrr")} 
 if(!require("PerformanceAnalytics")){install.packages("PerformanceAnalytics");require("PerformanceAnalytics")} 
 if(!require("OneR")){install.packages("OneR");require("OneR")} 
+if(!require("gdata")){install.packages("gdata");require("gdata")} 
